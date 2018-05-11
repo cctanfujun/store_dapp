@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Button, Checkbox, Form, ItemDescription } from "semantic-ui-react";
+import { sendToBlockChain } from "./BlockChain.js";
+import { Modal } from "react-bootstrap";
 
 const Find = () => {
   let style = {
@@ -22,11 +24,21 @@ class MyForm extends Component {
       fullName: "",
       discover: "",
       dapp_url: "",
-      dapp_desc: ""
+      img_url: "",
+      dapp_desc: "",
+      show_alert: false
     };
   }
 
-  handleChange(e, number){
+  handleClose() {
+    this.setState({ show: false });
+  }
+
+  handleShow() {
+    this.setState({ show: true });
+  }
+
+  handleChange(e, number) {
     if (number == 1) {
       this.setState({
         fullName: e.target.value
@@ -44,52 +56,67 @@ class MyForm extends Component {
         dapp_desc: e.target.value
       });
     }
-  };
+  }
 
   sendForm() {
-    var sned = this.state;
+    var dic = []
+    var state_str = (JSON.stringify(this.state));
+    dic.push(state_str)
+    sendToBlockChain(JSON.stringify(dic), function callback(resp) {
+      console.log(resp);
+    });
   }
 
   render() {
     return (
-      <Form>
-        <Form.Group widths="equal">
+      <div>
+        <Form>
+          <Form.Group widths="equal">
+            <Form.Input
+              fluid
+              label="Dapp名称"
+              placeholder="名称"
+              onChange={(ev, index) => {
+                this.handleChange(ev, 1);
+              }}
+            />
+            <Form.Input
+              fluid
+              label="发现人"
+              placeholder="昵称"
+              onChange={(ev, index) => {
+                this.handleChange(ev, 2);
+              }}
+            />
+          </Form.Group>
           <Form.Input
             fluid
-            label="Dapp名称"
-            placeholder="名称"
+            label="Dapp Url"
+            placeholder="http://"
             onChange={(ev, index) => {
-              this.handleChange(ev, 1);
+              this.handleChange(ev, 3);
             }}
           />
           <Form.Input
             fluid
-            label="发现人"
-            placeholder="昵称"
+            label="Image Url"
+            placeholder="请提交有效图片，留空将使用默认图片"
             onChange={(ev, index) => {
-              this.handleChange(ev, 2);
+              this.handleChange(ev, 3);
             }}
           />
-        </Form.Group>
-        <Form.Input
-          fluid
-          label="Dapp Url"
-          placeholder="http://"
-          onChange={(ev, index) => {
-            this.handleChange(ev, 3);
-          }}
-        />
-        <Form.TextArea
-          label="描述"
-          placeholder="简单说说这个App吧"
-          onChange={(ev, index) => {
-            this.handleChange(ev, 4);
-          }}
-        />
-        <Form.Button color="green" onClick={this.sendForm}>
-          Submit
-        </Form.Button>
-      </Form>
+          <Form.TextArea
+            label="描述"
+            placeholder="简单说说这个App吧"
+            onChange={(ev, index) => {
+              this.handleChange(ev, 4);
+            }}
+          />
+          <Form.Button color="green" onClick={this.sendForm.bind(this)}>
+            Submit
+          </Form.Button>
+        </Form>
+      </div>
     );
   }
 }

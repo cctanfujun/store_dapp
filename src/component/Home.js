@@ -89,7 +89,7 @@ Top.propTypes = {
 const Item = ({ item }) => (
   <Card>
     <Card.Content>
-      <Image floated="right" size="medium" src="./assets/images/steve.jpg" />
+      <Image floated="right" size="medium" src="https://nebulas.io/docs/NebulasLogo.svg" />
       <Card.Header>{item.project_name}</Card.Header>
       <Card.Meta>发现者:{item.descover}</Card.Meta>
       <Card.Description>
