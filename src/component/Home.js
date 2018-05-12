@@ -4,50 +4,41 @@ import PropTypes from "prop-types";
 import { Button, Card, Image } from "semantic-ui-react";
 import { Icon } from "semantic-ui-react";
 import { Container, Header } from "semantic-ui-react";
+import { getStoreItems, vote } from "./BlockChain.js";
 
-const items = [
-  {
-    project_name: "星云榜单",
-    descover: "xiaochen",
-    desc: "发现有趣的Dapp获得Nrank奖励",
-    image_url: "xx",
-    app_url: "",
-    rank: 15
-  },
-  {
-    project_name: "星云榜单",
-    descover: "xiaochen",
-    desc: "这是一个有趣的Dapp",
-    image_url: "xx",
-    app_url: "",
-    rank: 15
-  },
-  {
-    project_name: "星云榜单",
-    descover: "xiaochen",
-    desc: "这是一个有趣的Dapp",
-    image_url: "xx",
-    app_url: "",
-    rank: 15
-  },
-  {
-    project_name: "星云榜单",
-    descover: "xiaochen",
-    desc: "这是一个有趣的Dapp",
-    image_url: "xx",
-    app_url: "",
-    rank: 15
+class Home extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      items: []
+    };
   }
-];
+  componentDidMount() {
+    var obj = this;
+    getStoreItems(function(resp) {
+      var items_str = resp.result;
+      var items_obj = JSON.parse(items_str);
+      var data = [];
+      for (var i = 0; i < items_obj.length; i++) {
+        data.push(JSON.parse(items_obj[i]));
+      }
+      obj.setState({ items: data });
+    });
+  }
+  render() {
+    var datas = this.state.items;
+    console.log(datas);
 
-const Home = () => (
-  <div>
-    <Top />
-    <Card.Group centered={true}>
-      {items.map(item => <Item item={item} />)}
-    </Card.Group>
-  </div>
-);
+    return (
+      <div>
+        <Top />
+        <Card.Group centered={true}>
+          {datas.map(item => <Item item={item} />)}
+        </Card.Group>
+      </div>
+    );
+  }
+}
 
 class Top extends React.Component {
   constructor() {
@@ -74,8 +65,8 @@ class Top extends React.Component {
       <div class="ui message" style={style}>
         <i aria-hidden="true" class="close icon" onClick={this.handleClick} />
         <div class="content">
-          <h5>使用 NRank 给你中意的 DAPP 投票。</h5>
-          <h5>点赞后可以分成之后点赞用户的 NRank。一起发现好应用吧！</h5>
+          <h5>给你中意的 DAPP 投票。</h5>
+          <h5>一起发现好应用吧！</h5>
         </div>
       </div>
     );
@@ -86,33 +77,47 @@ Top.propTypes = {
   style: PropTypes.string
 };
 
-const Item = ({ item }) => (
-  <Card>
-    <Card.Content>
-      <Image floated="right" size="medium" src="https://nebulas.io/docs/NebulasLogo.svg" />
-      <Card.Header>{item.project_name}</Card.Header>
-      <Card.Meta>发现者:{item.descover}</Card.Meta>
-      <Card.Description>
-        {item.desc}
-        <br />
-        <br />
-        <div>
-          <Icon size="large" name="money" color="blue" /> 已有<strong>
-            {item.rank} Nrank{" "}
-          </strong>
-          点赞
+const Item = ({ item }) => {
+  const voteApp = () => {
+    vote(item.dapp_url);
+  };
+
+  return (
+    <Card>
+      <Card.Content>
+        <Image
+          floated="right"
+          size="medium"
+          src={
+            item.img_url == ""
+              ? "https://nebulas.io/docs/NebulasLogo.svg"
+              : item.img_url
+          }
+        />
+        <Card.Header>{item.fullName}</Card.Header>
+        <Card.Meta>发现者:{item.discover}</Card.Meta>
+        <Card.Description>
+          {item.dapp_desc}
+          <br />
+          <br />
+          <div>
+            <Icon size="large" name="money" color="blue" /> 已有<strong>
+              {item.rank == undefined ? 0 : item.rank} Nrank{" "}
+            </strong>
+            点赞
+          </div>
+        </Card.Description>
+      </Card.Content>
+      <Card.Content extra>
+        <div className="ui two buttons">
+          <Button basic color="green" onClick={voteApp}>
+            点赞
+          </Button>
         </div>
-      </Card.Description>
-    </Card.Content>
-    <Card.Content extra>
-      <div className="ui two buttons">
-        <Button basic color="green">
-          点赞
-        </Button>
-      </div>
-    </Card.Content>
-  </Card>
-);
+      </Card.Content>
+    </Card>
+  );
+};
 
 Item.propTypes = {
   item: PropTypes.array

@@ -1,64 +1,70 @@
 "use strict";
 
-
 var NStore = function() {
-  
-  // 保存每个 Dapp 信息
-  LocalContractStorage.put("items", []);
-  
-  // 保存每个 Dapp 当前 点赞人 和 点赞数量 
-  //[{address:xxx,nrank:10}]
-  LocalContractStorage.defineMapProperties(this, "ranks");
-
-};
-
-var StoreItem = function(text) {
-	if (text) {
-		var obj = JSON.StoreItem(text);
-		this.fullName = obj.fullName;
-		this.discover = obj.discover;
-        this.img_url = obj.img_url;
-        this.dapp_desc = obj.dapp_desc;
-        this.total_rank = obk.total_rank;
-	} else {
-	    this.fullName = "";
-	    this.discover = "";
-        this.img_url = "";
-        this.dapp_desc = "";
-        this.total_rank = 0;
-	}
+  LocalContractStorage.defineMapProperty(this, "votes");
 };
 
 NStore.prototype = {
   init: function() {
-    
-  },
-  save: function(item) {
-    var item_str = item.trim();
-    var s_item = new StoreItem(item)
-    var dapp_url = s_item.dapp_url
-    var ranks = this.ranks.get(dapp_url)
-    var item_total_rank = 0
-    for (i=0;i<ranks.length;i++){
-        item_total_rank += ranks[i].get('nrank')
-    }
-    s_item.total_rank = item_total_rank
-    var item_json = JSON.stringify(s_item)
-    var items = LocalContractStorage.get("items");
-    LocalContractStorage.put("items", items.concat([item_json]));
+    LocalContractStorage.put("items", []);
   },
 
-  getall: function() {
+  save: function(value) {
+    value = value.trim();
+    if (value === "") {
+      throw new Error("empty key / value");
+    }
     var items = LocalContractStorage.get("items");
-    return JSON.stringify(items);
+    LocalContractStorage.put("items", items.concat([value]));
   },
-  vote: function(dapp_url, nrank_value) {
+
+  getAll: function() {
+    var items = LocalContractStorage.get("items");
+    return items;
+  },
+
+  vote: function(dapp_url) {
     var from = Blockchain.transaction.from;
-    var balance = this.balances.get(from);
-  },
-  getfree: function() {},
-  getNasByNrank: function(nrank_value) {},
-  getNrankByNas: function(nrank_value) {}
+    var key = dapp_url + from;
+    var value = this.votes.get(key);
+    if (value) {
+      throw new Error("has vote");
+    } else {
+      this.votes.put(key, key);
+      var items = LocalContractStorage.get("items");
+      var newItems = [];
+      for (var i = 0; i < items.length; i++) {
+        var store_item = new StoreItem(items[i]);
+        if (store_item.dapp_url == dapp_url) {
+          if (store_item.rank == undefined) {
+            store_item.rank = 0;
+          }
+          store_item.rank++;
+        }
+        newItems.push(JSON.stringify(store_item));
+        LocalContractStorage.put("items", newItems);
+      }
+      return JSON.stringify(newItems);
+    }
+  }
 };
 
+var StoreItem = function(text) {
+  if (text) {
+    var obj = JSON.parse(text);
+    this.fullName = obj.fullName;
+    this.discover = obj.discover;
+    this.dapp_url = obj.dapp_url;
+    this.img_url = obj.img_url;
+    this.dapp_desc = obj.dapp_desc;
+    this.rank = obj.rank;
+  } else {
+    this.fullName = "";
+    this.discover = "";
+    this.dapp_url = "";
+    this.img_url = "";
+    this.dapp_desc = "";
+    this.rank = 0;
+  }
+};
 module.exports = NStore;

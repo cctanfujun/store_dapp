@@ -51,7 +51,11 @@ class MyForm extends Component {
       this.setState({
         dapp_url: e.target.value
       });
-    } else {
+    } else if(number == 4){
+      this.setState({
+        img_url: e.target.value
+      });
+    }else {
       this.setState({
         dapp_desc: e.target.value
       });
@@ -59,8 +63,8 @@ class MyForm extends Component {
   }
 
   sendForm() {
+    var state_str = JSON.stringify(this.state);
     var dic = []
-    var state_str = (JSON.stringify(this.state));
     dic.push(state_str)
     sendToBlockChain(JSON.stringify(dic), function callback(resp) {
       console.log(resp);
@@ -102,14 +106,14 @@ class MyForm extends Component {
             label="Image Url"
             placeholder="请提交有效图片，留空将使用默认图片"
             onChange={(ev, index) => {
-              this.handleChange(ev, 3);
+              this.handleChange(ev, 4);
             }}
           />
           <Form.TextArea
             label="描述"
             placeholder="简单说说这个App吧"
             onChange={(ev, index) => {
-              this.handleChange(ev, 4);
+              this.handleChange(ev, 5);
             }}
           />
           <Form.Button color="green" onClick={this.sendForm.bind(this)}>
